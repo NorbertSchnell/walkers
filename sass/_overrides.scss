@@ -1,0 +1,58 @@
+// Entry point for application specific styles
+.buttons {
+  .btn {
+    width: 60%;
+    margin: 10px 20%;
+  }
+}
+
+.toggle {
+  width: 40px;
+  height: 40px;
+  border-radius: 2px;
+  border: 1px solid white;
+  background-color: black;
+  cursor: pointer;
+
+  line {
+    stroke-width: 3px;
+  }
+
+  .x { display: none; }
+  &.active .x { display: block; }
+}
+
+.header-section {
+  position: relative;
+  margin: 10px 5%;
+}
+
+#loop-toggle {
+  position: relative;
+  width: 120px;
+
+  .label {
+    display: block;
+    height: 40px;
+    line-height: 40px;
+    font-size: 1rem;
+    padding-left: 50px;
+  }
+
+  .toggle {
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+}
+
+#home-button {
+  width: 40px;
+  height: 40px;
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 10;
+  background-image: url(../images/home.jpg);
+  background-size: cover;
+}
