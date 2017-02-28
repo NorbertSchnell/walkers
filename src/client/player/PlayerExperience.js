@@ -3,11 +3,12 @@ import PitchAndRollEstimator from './PitchAndRollEstimator.js';
 import ButtonView from './ButtonView.js';
 import LoopSynth from './LoopSynth.js';
 import StretchSynth from './StretchSynth.js';
+import path from 'path';
 
 const audioContext = soundworks.audioContext;
 
 function getBaseName(fileName) {
-  let slashIndex = fileName.lastIndexOf("/");
+  let slashIndex = fileName.lastIndexOf('/');
 
   if (slashIndex >= 0)
     fileName = fileName.substring(slashIndex + 1);
@@ -86,7 +87,7 @@ export default class PlayerExperience extends soundworks.Experience {
     this.audioBufferManager.show();
 
     this.fileSystem.getList({
-      path: `sounds/${def.label}`,
+      path: path.join('sounds', def.label),
       directories: false,
       recursive: false,
     }).then((fileList) => {
@@ -100,8 +101,8 @@ export default class PlayerExperience extends soundworks.Experience {
 
       this.audioBufferManager
         .loadFiles(fileList, this.audioBufferManager.view)
-        .then(() => {
-          this.audioBuffers = this.audioBufferManager.getAudioBufferArray();
+        .then((buffers) => {
+          this.audioBuffers = buffers;
 
           // create a list of buttons from the sound files names in the chosen directory
           this.view = new ButtonView(definitions, this.toggleLoop, this.buttonHome, this.buttonStartPlaying, this.buttonStopPlaying, { showHeader: true, buttonState: true });
@@ -145,7 +146,7 @@ export default class PlayerExperience extends soundworks.Experience {
     }
 
     this.view = new ButtonView(definitions, null, null, this.buttonSelectDir, null, { showHeader: false, buttonState: false });
-    this.show();    
+    this.show();
   }
 
   start() {
