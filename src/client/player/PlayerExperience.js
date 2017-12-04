@@ -101,7 +101,7 @@ export default class PlayerExperience extends soundworks.Experience {
       this.audioBufferManager
         .loadFiles(fileList, this.audioBufferManager.view)
         .then(() => {
-          this.audioBuffers = this.audioBufferManager.getAudioBufferArray();
+          this.audioBuffers = this.audioBufferManager.data;
 
           // create a list of buttons from the sound files names in the chosen directory
           this.view = new ButtonView(definitions, this.toggleLoop, this.buttonHome, this.buttonStartPlaying, this.buttonStopPlaying, { showHeader: true, buttonState: true });

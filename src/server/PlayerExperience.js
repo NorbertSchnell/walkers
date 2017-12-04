@@ -8,6 +8,7 @@ export default class PlayerExperience extends Experience {
     this.sharedConfig = this.require('shared-config');
     this.checkin = this.require('checkin');
     this.fileSystem = this.require('file-system', { enableCache: false });
+    this.audioBufferManager = this.require('audio-buffer-manager');
   }
 
   start() {}
