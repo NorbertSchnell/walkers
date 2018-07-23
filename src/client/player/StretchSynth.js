@@ -4,6 +4,8 @@ const audioContext = soundworks.audioContext;
 const audio = soundworks.audio;
 const scheduler = audio.getScheduler();
 
+function emptyFun() {}
+
 function cent2lin(cent) {
   return Math.pow(2, cent / 1200);
 }
@@ -52,8 +54,6 @@ class ScrubEngine extends audio.GranularEngine {
     return super.advanceTime(time);
   }
 }
-
-function emptyFun() {}
 
 export default class StretchSynth {
   constructor(options = {}) {

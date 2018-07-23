@@ -11,6 +11,14 @@ const defaultTemplate = `
           </g>
         </svg>
       </div>
+      <div id="granular-toggle">
+        <span class="label">granular</span> <svg xmlns="http://www.w3.org/2000/svg" class="toggle" version="1.1" viewBox="0 0 50 50" preserveAspectRatio="none">
+          <g class="x">
+            <line x1="8" y1="8" x2="42" y2="42" stroke="white" />
+            <line x1="8" y1="42" x2="42" y2="8" stroke="white" />
+          </g>
+        </svg>
+      </div>
       <div id="home-button"></div>
     </div>
   <% } %>
@@ -52,7 +60,7 @@ function emtpyFun() { };
  * @todo - not standard View API
  */
 export class ButtonView extends View {
-  constructor(definitions, onLoop, onHome, onPush, onRelease, options = {}) {
+  constructor(definitions, onLoop, onGranular, onHome, onPush, onRelease, options = {}) {
     const template = options.template ||  defaultTemplate;
     const content = { definitions, showHeader: options.showHeader };
     options = Object.assign({ className: 'buttons' }, options);
@@ -60,11 +68,13 @@ export class ButtonView extends View {
 
     this._definitions = definitions;
     this._onLoop = onLoop || emtpyFun;
+    this._onGranular = onGranular || emtpyFun;
     this._onHome = onHome || emtpyFun;
     this._onPush = onPush || emtpyFun;
     this._onRelease = onRelease || emtpyFun;
 
-    this._toggleState = !!options.toggleState;
+    this._loopState = !!options.loopState;
+    this._granularState = !!options.granularState;
     this._buttonState = (options.buttonState !== undefined) ? !!options.buttonState : true;
     this._maxPushed = (options.maxPushed !== undefined) ?  Math.max(1, options.maxPushed) : 1;
     this._steelOldest = (options.steelOldest !== undefined) ? !!options.steelOldest : true;
@@ -79,10 +89,12 @@ export class ButtonView extends View {
     });
 
     this._handleLoopToggle = this._handleLoopToggle.bind(this);
+    this._handleGranularToggle = this._handleGranularToggle.bind(this);
     this._handleTouchstart = this._handleTouchstart.bind(this);
     this._handleTouchend = this._handleTouchend.bind(this);
     this.events = {
       'touchstart #loop-toggle': this._handleLoopToggle,
+      'touchstart #granular-toggle': this._handleGranularToggle,
       'touchstart #home-button': this._onHome,
       'touchstart .btn': this._handleTouchstart,
       'touchend .btn': this._handleTouchend,
@@ -190,17 +202,33 @@ export class ButtonView extends View {
   _handleLoopToggle(e) {
     e.preventDefault();
 
-    const $target = this.$el.querySelector('.toggle');
+    const $target = this.$el.querySelector('#loop-toggle .toggle');
 
-    if (this._toggleState) {
+    if (this._loopState) {
       $target.classList.remove('active');
-      this._toggleState = false;
+      this._loopState = false;
     } else {
       $target.classList.add('active');
-      this._toggleState = true;
+      this._loopState = true;
     }
 
-    this._onLoop(this._toggleState);
+    this._onLoop(this._loopState);
+  }
+
+  _handleGranularToggle(e) {
+    e.preventDefault();
+
+    const $target = this.$el.querySelector('#granular-toggle .toggle');
+
+    if (this._granularState) {
+      $target.classList.remove('active');
+      this._granularState = false;
+    } else {
+      $target.classList.add('active');
+      this._granularState = true;
+    }
+
+    this._onGranular(this._granularState);
   }
 
   /**
@@ -258,6 +286,11 @@ export class ButtonView extends View {
       const $target = this.$el.querySelector(`[data-index="${index}"]`);
       this._release(index, $target, silently);
     }
+  }
+
+  resetButtons() {
+    for (let index of this._pushed)
+      this.releaseButton(index, true);
   }
 }
 

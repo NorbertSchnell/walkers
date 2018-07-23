@@ -2,6 +2,8 @@ import * as soundworks from 'soundworks/client';
 const client = soundworks.client;
 const audioContext = soundworks.audioContext;
 
+function emptyFun() {}
+
 function cent2lin(cent) {
   return Math.pow(2, cent / 1200);
 }
@@ -31,12 +33,14 @@ export default class LoopSynth {
     this.cutoff.frequency.value = this.maxCutoffFreq;
     this.cutoff.Q.value = 0;
 
+    this.loop = false;
+
     this.source = null;
     this.env = null;
     this.playbackRate = 1;
   }
 
-  start(buffer) {
+  start(buffer, onEnd = emptyFun) {
     const time = audioContext.currentTime;
 
     this.stop(time);
@@ -52,8 +56,9 @@ export default class LoopSynth {
     source.playbackRate.value = this.playbackRate;
     source.loopStart = 0;
     source.loopEnd = buffer.duration;
-    source.loop = true;
+    source.loop = this.loop;
     source.start(audioContext.currentTime);
+    source.onended = onEnd;
 
     this.source = source;
     this.env = env;
@@ -93,5 +98,12 @@ export default class LoopSynth {
 
     if (this.source)
       this.source.playbackRate.value = this.playbackRate;
+  }
+
+  setLoop(value) {
+    this.loop = !!value; 
+
+    if (this.source !== null)
+      this.source.loop = this.loop;
   }
 }

@@ -20,7 +20,7 @@
   "dependencies": {
     "babel-runtime": "^6.6.1",
     "debug": "^2.1.2",
-    "soundworks": "collective-soundworks/soundworks.git",
+    "soundworks": "^2.1.12",
     "source-map-support": "^0.4.0"
   },
   "devDependencies": {

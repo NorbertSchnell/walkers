@@ -25,11 +25,11 @@ function getButtonName(filePath) {
   const segs = baseName.split('_');
   let skip = true;
 
-  if(segs.length > 1) {
+  if (segs.length > 1) {
     let i = 0;
 
     // skip leading numbers
-    if(!isNaN(parseInt(segs[0])))
+    if (!isNaN(parseInt(segs[0])))
       i++;
 
     let buttonName = segs[i];
@@ -67,11 +67,15 @@ export default class PlayerExperience extends soundworks.Experience {
       descriptors: ['accelerationIncludingGravity']
     });
 
-    this.synth = new StretchSynth();
+    this.doLoop = false;
+    this.useGranular = false;
+
+    this.synth = new LoopSynth();
     this.audioBuffers = null;
 
     this.buttonSelectDir = this.buttonSelectDir.bind(this);
     this.toggleLoop = this.toggleLoop.bind(this);
+    this.toggleGranular = this.toggleGranular.bind(this);
     this.buttonHome = this.buttonHome.bind(this);
     this.buttonStartPlaying = this.buttonStartPlaying.bind(this);
     this.buttonStopPlaying = this.buttonStopPlaying.bind(this);
@@ -104,7 +108,7 @@ export default class PlayerExperience extends soundworks.Experience {
           this.audioBuffers = this.audioBufferManager.data;
 
           // create a list of buttons from the sound files names in the chosen directory
-          this.view = new ButtonView(definitions, this.toggleLoop, this.buttonHome, this.buttonStartPlaying, this.buttonStopPlaying, { showHeader: true, buttonState: true });
+          this.view = new ButtonView(definitions, this.toggleLoop, this.toggleGranular, this.buttonHome, this.buttonStartPlaying, this.buttonStopPlaying, { showHeader: true, buttonState: true });
 
           this.audioBufferManager.hide();
           this.show();
@@ -112,22 +116,35 @@ export default class PlayerExperience extends soundworks.Experience {
     });
   }
 
-  toggleLoop(value) {
-    this.synth.setLoop(value);
+  toggleLoop(doLoop) {
+    this.synth.setLoop(doLoop);
+    this.doLoop = doLoop;
+  }
+
+  toggleGranular(useGranular) {
+    if (useGranular !== this.useGranular) {
+      this.synth.stop();
+      this.view.resetButtons();
+      this.useGranular = useGranular;
+
+      if (useGranular)
+        this.synth = new StretchSynth();
+      else
+        this.synth = new LoopSynth();
+
+      this.synth.setLoop(this.doLoop);
+    }
   }
 
   buttonHome(value) {
-    //this.synth.stop();
-    //this.hide();
-    //this.showMenu();
     location.reload();
   }
 
   buttonStartPlaying(index, def) {
     const audioBuffer = this.audioBuffers[index];
     this.synth.start(audioBuffer, () => {
-        this.view.releaseButton(index, true); // release it, but silently!
-      });
+      this.view.releaseButton(index, true); // release it, but silently!
+    });
   }
 
   buttonStopPlaying(index, def) {
@@ -144,8 +161,8 @@ export default class PlayerExperience extends soundworks.Experience {
       });
     }
 
-    this.view = new ButtonView(definitions, null, null, this.buttonSelectDir, null, { showHeader: false, buttonState: false });
-    this.show();    
+    this.view = new ButtonView(definitions, null, null, null, this.buttonSelectDir, null, { showHeader: false, buttonState: false });
+    this.show();
   }
 
   start() {
