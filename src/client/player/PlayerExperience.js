@@ -6,6 +6,25 @@ import StretchSynth from './StretchSynth.js';
 
 const audioContext = soundworks.audioContext;
 
+const deviceMotionPlatformFeatureDef = {
+  id: 'device-motion',
+  check: function () {
+    return !!DeviceMotionEvent;
+  },
+  interactionHook: function () {
+    if (DeviceMotionEvent && typeof DeviceMotionEvent.requestPermission === 'function') {
+      return DeviceMotionEvent.requestPermission()
+        .then((response) => {
+          return Promise.resolve((response == 'granted'));
+        })
+        .catch((err) => {
+          console.log(err);
+          return Promise.resolve(false);
+        });
+    }
+  }
+}
+
 function getBaseName(fileName) {
   let slashIndex = fileName.lastIndexOf("/");
 
@@ -50,8 +69,9 @@ export default class PlayerExperience extends soundworks.Experience {
     super();
 
     this.platform = this.require('platform', {
-      features: ['web-audio']
+      features: ['web-audio', 'device-motion']
     });
+    this.platform.addFeatureDefinition(deviceMotionPlatformFeatureDef);
 
     this.fileSystem = this.require('file-system', {
       list: {
@@ -63,9 +83,7 @@ export default class PlayerExperience extends soundworks.Experience {
 
     this.audioBufferManager = this.require('audio-buffer-manager');
 
-    this.motionInput = this.require('motion-input', {
-      descriptors: ['accelerationIncludingGravity']
-    });
+    this.pitchAndRoll = new PitchAndRollEstimator();
 
     this.doLoop = false;
     this.useGranular = false;
@@ -79,10 +97,6 @@ export default class PlayerExperience extends soundworks.Experience {
     this.buttonHome = this.buttonHome.bind(this);
     this.buttonStartPlaying = this.buttonStartPlaying.bind(this);
     this.buttonStopPlaying = this.buttonStopPlaying.bind(this);
-  }
-
-  init() {
-    this.pitchAndRoll = new PitchAndRollEstimator();
   }
 
   buttonSelectDir(index, def) {
@@ -165,27 +179,24 @@ export default class PlayerExperience extends soundworks.Experience {
     this.show();
   }
 
+  registerDeviceMotionListener() {
+    window.addEventListener('devicemotion', (e) => {
+      let accX = event.accelerationIncludingGravity.x;
+      let accY = event.accelerationIncludingGravity.y;
+      let accZ = event.accelerationIncludingGravity.z;
+
+      const pitchAndRoll = this.pitchAndRoll;
+      pitchAndRoll.estimateFromAccelerationIncludingGravity(accX, accY, accZ);
+
+      this.synth.setPitch(pitchAndRoll.pitch);
+      this.synth.setRoll(pitchAndRoll.roll);
+    });
+  }
+
   start() {
     super.start(); // don't forget this
 
-    if (!this.hasStarted)
-      this.init();
-
+    this.registerDeviceMotionListener();
     this.showMenu();
-
-    // setup motion input listeners
-    if (this.motionInput.isAvailable('accelerationIncludingGravity')) {
-      this.motionInput.addListener('accelerationIncludingGravity', (data) => {
-        const accX = data[0];
-        const accY = data[1];
-        const accZ = data[2];
-
-        const pitchAndRoll = this.pitchAndRoll;
-        pitchAndRoll.estimateFromAccelerationIncludingGravity(accX, accY, accZ);
-
-        this.synth.setPitch(pitchAndRoll.pitch);
-        this.synth.setRoll(pitchAndRoll.roll);
-      });
-    }
   }
 }

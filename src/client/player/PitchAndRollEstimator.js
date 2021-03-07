@@ -36,7 +36,7 @@ export default class PitchAndRollEstimator {
     fY /= norm;
     fZ /= norm;
 
-    this.pitch = radToDeg(Math.asin(fY)); // beta is in [-pi/2; pi/2[
-    this.roll = radToDeg(Math.atan2(-fX, fZ)); // gamma is in [-pi; pi[
+    this.pitch = radToDeg(Math.asin(-fY)); // beta is in [-pi/2; pi/2[
+    this.roll = radToDeg(Math.atan2(fX, -fZ)); // gamma is in [-pi; pi[
   }
 }
